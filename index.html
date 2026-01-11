@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>핵심 국어 어휘 마스터 (랭킹모드)</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #818cf8;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --correct: #10b981;
+            --wrong: #ef4444;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 네비게이션 */
+        .nav-bar {
+            width: 100%;
+            background: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: none;
+            background: #eee;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            padding: 20px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            margin: 10px 0 20px;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        .content-area {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .content-area.active {
+            display: flex;
+        }
+
+        /* === 1. 카드 퀴즈 === */
+        .quiz-card-area {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .quiz-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+        }
+
+        .quiz-card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 24px;
+            background: var(--card-bg);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            border: 2px solid var(--primary);
+            background: #ffffff;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* === 2. 공부 모드 === */
+        .study-card {
+            background: white;
+            width: 100%;
+            padding: 40px 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border-top: 5px solid var(--primary);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .study-nav {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* === 3. 목록 === */
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .list-container {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .list-item:hover {
+            background: #f9fafb;
+        }
+
+        .list-term {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .list-def {
+            font-size: 0.9rem;
+            color: #4b5563;
+            word-break: keep-all;
+            line-height: 1.4;
+        }
+
+        /* === 4. 타임어택 === */
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .speed-question-box {
+            background: white;
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 2px solid var(--primary);
+            box-sizing: border-box;
+        }
+
+        .speed-word {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .speed-cat {
+            font-size: 0.8rem;
+            color: #888;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-align: left;
+            line-height: 1.3;
+            color: var(--text);
+            word-break: keep-all;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.98);
+        }
+
+        .choice-btn.correct {
+            background: var(--correct);
+            color: white;
+            border-color: var(--correct);
+        }
+
+        .choice-btn.wrong {
+            background: var(--wrong);
+            color: white;
+            border-color: var(--wrong);
+        }
+
+        .start-screen {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* === 랭킹 모달 스타일 === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .rank-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 1.2rem;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .rank-list {
+            text-align: left;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .rank-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 공통 버튼 */
+        .btn-action {
+            border: none;
+            padding: 15px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s;
+            flex: 1;
+        }
+
+        .btn-know {
+            background-color: var(--correct);
+            color: white;
+        }
+
+        .btn-dunno {
+            background-color: var(--wrong);
+            color: white;
+        }
+
+        .btn-nav {
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+            font-size: 1.2rem;
+        }
+
+        .category-badge {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: #666;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .main-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .sub-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            word-break: keep-all;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="switchTab('study')" id="tab-study">📖 공부</button>
+        <button class="nav-btn" onclick="switchTab('quiz')" id="tab-quiz">⚡ 카드퀴즈</button>
+        <button class="nav-btn active" onclick="switchTab('speed')" id="tab-speed">⏱️ 타임어택</button>
+        <button class="nav-btn" onclick="switchTab('list')" id="tab-list">📑 목록</button>
+    </div>
+
+    <div class="container">
+
+        <div id="section-speed" class="content-area active">
+            <div id="speed-start-screen" class="start-screen">
+                <h2>⏱️ 타임어택 모드</h2>
+                <p style="color:#666; margin-bottom:30px;">
+                    총 <span id="total-count">45</span>개의 단어를 얼마나 빨리 맞추는지 측정합니다.<br>
+                    기록은 명예의 전당에 저장됩니다!
+                </p>
+                <button class="btn-action btn-primary" onclick="startSpeedGame()">전체 도전 시작!</button>
+                <button class="btn-action btn-nav" onclick="loadRanking(); document.getElementById('rank-modal').style.display='flex'; document.getElementById('player-name').style.display='none'; document.querySelector('#rank-modal .btn-know').style.display='none';" style="margin-top:10px;">🏆 명예의 전당 보기</button>
+            </div>
+
+            <div id="speed-game-area" style="display:none; width:100%;">
+                <div class="timer-display" id="speed-timer">00:00.00</div>
+                <div style="text-align:right; font-size:0.8rem; color:#888; margin-bottom:5px;">
+                    남은 문제: <span id="speed-left">0</span>
+                </div>
+
+                <div class="speed-question-box">
+                    <span class="speed-cat" id="sp-cat">카테고리</span>
+                    <div class="speed-word" id="sp-word">문제 단어</div>
+                    <div style="font-size:0.9rem; color:#aaa;" id="sp-hanja">한자</div>
+                </div>
+
+                <div class="choice-grid" id="choice-container">
+                </div>
+                <div id="speed-feedback" style="height:30px; margin-top:10px; font-weight:bold; color:var(--wrong);">
+                </div>
+            </div>
+        </div>
+
+        <div id="section-study" class="content-area">
+            <h1>학습 카드</h1>
+            <div style="margin-bottom:10px; font-weight:bold; color:#888;" id="s-count">1 / 45</div>
+
+            <div class="study-card">
+                <div>
+                    <span class="category-badge" id="s-cat">카테고리</span>
+                    <div class="main-text" id="s-term" style="color:var(--primary); margin-top:10px;">단어</div>
+                    <div class="sub-text" id="s-def" style="margin-top:20px; font-weight:600;">뜻</div>
+                </div>
+            </div>
+
+            <div class="study-nav">
+                <button class="btn-action btn-nav" onclick="prevStudy()">◀ 이전</button>
+                <button class="btn-action btn-nav" onclick="nextStudy()">다음 ▶</button>
+            </div>
+        </div>
+
+        <div id="section-quiz" class="content-area">
+            <h1>랜덤 카드 퀴즈</h1>
+            <div
+                style="display:flex; justify-content:space-between; width:100%; margin-bottom:10px; color:#666; font-size:0.9rem;">
+                <span id="q-remaining">대기: 45</span>
+                <span id="q-score">완료: 0</span>
+            </div>
+
+            <div class="quiz-card-area" onclick="flipCard()">
+                <div class="quiz-card" id="flashcard">
+                    <div class="card-face card-front">
+                        <span class="category-badge" id="q-front-cat"></span>
+                        <div class="main-text" id="q-front-main"></div>
+                        <div class="sub-text" id="q-front-sub"></div>
+                        <div style="margin-top:auto; font-size:0.8rem; color:#aaa;">터치하여 확인</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <span class="category-badge" id="q-back-cat"></span>
+                        <div class="main-text" id="q-back-main"></div>
+                        <div class="sub-text" id="q-back-sub"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; width:100%;">
+                <button class="btn-action btn-dunno" onclick="handleQuiz(false)">모름 (다시)</button>
+                <button class="btn-action btn-know" onclick="handleQuiz(true)">알아요 (완료)</button>
+            </div>
+        </div>
+
+        <div id="section-list" class="content-area">
+            <h1>전체 목록</h1>
+            <input type="text" class="search-box" id="searchInput" placeholder="단어, 뜻 검색..." onkeyup="filterList()">
+            <div class="list-container" id="listContainer"></div>
+        </div>
+
+    </div>
+
+    <div id="rank-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="color:var(--primary); margin:0;">🎉 완주 성공!</h2>
+            <div id="final-record-display" style="font-size:2rem; font-weight:800; margin:10px 0;">00:00.00</div>
+            <p id="rank-msg">이름을 입력하여 명예의 전당에 남기세요!</p>
+            
+            <input type="text" id="player-name" class="rank-input" placeholder="이름 (3글자 이상)" maxlength="10">
+            
+            <button class="btn-action btn-know" onclick="submitScore()">기록 저장하기</button>
+            <button class="btn-action btn-nav" onclick="closeRankModal()" style="margin-top:10px;">닫기</button>
+
+            <div id="ranking-board" class="rank-list" style="display:none;">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================
+        // [중요] Render 배포 주소 (bbazag8.onrender.com)
+        // =========================================================
+        const API_URL = "https://bbazag8.onrender.com"; 
+        
+        // 정확한 밀리초 기록 저장용
+        let finalTimeMs = 0; 
+
+        // === Sound Manager ===
+        class SoundManager {
+            constructor() {
+                this.ctx = null;
+                this.init();
+            }
+            init() {
+                try {
+                    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                } catch (e) {
+                    console.error('Web Audio API is not supported');
+                }
+            }
+            playTone(freq, type, duration, startTime = 0) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime + startTime);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime + startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + startTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(this.ctx.currentTime + startTime);
+                osc.stop(this.ctx.currentTime + startTime + duration);
+            }
+            playClick() {
+                this.resume();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+            playCorrect() {
+                this.resume();
+                this.playTone(523.25, 'sine', 0.4, 0); // High C
+                this.playTone(659.25, 'sine', 0.6, 0.1); // High E
+            }
+            playWrong() {
+                this.resume();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+            playFlip() {
+                this.resume();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(1000, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+            playFanfare() {
+                this.resume();
+                const now = 0;
+                this.playTone(523.25, 'triangle', 0.2, now);
+                this.playTone(659.25, 'triangle', 0.2, now + 0.15);
+                this.playTone(783.99, 'triangle', 0.2, now + 0.3);
+                this.playTone(1046.50, 'triangle', 0.6, now + 0.45);
+            }
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+        }
+        const Sound = new SoundManager();
+
+        // === 데이터 (어휘) ===
+        const rawData = [
+            ["문학 개념", "희곡", "놀 戲 | 굽을 曲", "공연을 목적으로 하는 연극의 대본.", ""],
+            ["문학 개념", "막", "-", "연극의 단락을 세는 단위. 한 막은 무대의 막이 올랐다가 다시 내릴 때까지.", ""],
+            ["문학 개념", "장", "-", "막의 하위 단위. 무대 장면이 변하지 않고 이루어지는 사건의 한 토막.", ""],
+            ["문학 개념", "대사", "무대 臺 | 말씀 詞", "연극이나 영화 따위에서 등장인물, 즉 배우가 하는 말.", ""],
+            ["문학 개념", "해설", "-", "희곡의 첫머리에서 무대 장치, 인물, 배경 등을 설명해 주는 역할.", ""],
+            ["문학 개념", "지시문", "가리킬 指 | 보일 示 | 글월 文", "희곡에서, 등장인물의 행동이나 표정, 무대 장치, 분위기 따위를 나타내는 부분.", ""],
+            ["문학 개념", "무대 지시문", "-", "무대 장치, 조명, 음악, 분위기 등을 지시하는 지시문.", ""],
+            ["문학 개념", "행동 지시문", "-", "등장인물의 행동, 표정, 등장과 퇴장 시기 등을 지시하는 지시문.", ""],
+            ["속담", "남의 손의 떡은 커 보인다", "-", "남의 것이 제 것보다 더 좋아 보인다는 뜻으로, 남의 것을 탐내는 마음을 이르는 말.", ""],
+            ["속담", "닫는 사슴을 보고 얻은 토끼를 잃는다", "-", "지나치게 욕심을 부리다가 도리어 손해를 봄을 비유적으로 이르는 말.", ""],
+            ["속담", "닫는", "-", "빨리 뛰어가다", ""],
+            ["속담", "바다는 메워도 사람의 욕심은 못 채운다", "-", "아무리 넓고 깊은 바다라도 메울 수는 있지만, 사람의 욕심은 한이 없음을 비유적으로 이르는 말.", ""],
+            ["속담", "아홉 가진 놈이 하나 가진 놈 부러워한다", "-", "이미 많이 가진 사람이 남의 작은 것까지 탐내는, 욕심이 많음을 비유적으로 이르는 말.", ""],
+            ["문학 개념", "고전 소설", "옛 古 | 전할 傳 | 작을 小 | 말씀 說", "19세기 이전에 창작된 소설을 이르는 말.", ""],
+            ["문학 개념", "신소설", "-", "갑오개혁 이후부터 현대 소설이 창작되기 전까지의 소설.", ""],
+            ["문학 개념", "일대기적 구성", "하나 一 | 시대 代 | 기록할 記 | 과녁 的 | 얽을 構 | 이룰 成", "시간의 흐름에 따라 주인공의 일생이 순서대로 전개되는 구성.", ""],
+            ["문학 개념", "순행적 구성", "-", "시간의 흐름이 자연적으로 흘러가는 구성 방식.", ""],
+            ["한자 성어", "각골난망", "새길 刻 | 뼈 骨 | 어려울 難 | 잊을 忘", "남에게 입은 은혜가 뼈에 새길 만큼 커서 잊히지 아니함.", ""],
+            ["한자 성어", "결초보은", "맺을 結 | 풀 草 | 갚을 報 | 은혜 恩", "죽은 뒤에라도 은혜를 잊지 않고 갚음을 이르는 말.", ""],
+            ["한자 성어", "반포지효", "돌이킬 反 | 먹을 哺 | 어조사 之 | 효도 孝", "자식이 자란 후에 어버이의 은혜를 갚는 효성을 이르는 말.", ""],
+            ["한자 성어", "백골난망", "흰 白 | 뼈 骨 | 어려울 難 | 잊을 忘", "죽어서 백골이 되어도 잊을 수 없을 만큼 큰 은혜에 대한 고마움.", ""],
+            ["한자 성어", "백골", "-", "죽은 사람의 몸이 썩고 남은 뼈.", ""],
+            ["한자 성어", "풍수지탄", "바람 風 | 나무 樹 | 어조사 之 | 탄식할 嘆", "효도를 다하지 못한 채 어버이를 여읜 자식의 슬픔.", ""],
+            ["한자 성어", "여의다", "-", "부모나 사랑하는 사람이 죽어서 이별하다.", ""],
+            ["필수 어휘", "남루하다", "헌 누더기 藍 | 헌 누더기 縷", "옷 따위가 낡아 해지고 차림새가 너저분하다.", ""],
+            ["필수 어휘", "명분", "이름 名 | 나눌 分", "일을 꾀할 때 내세우는 구실이나 이유 따위.", ""],
+            ["필수 어휘", "명목", "名目", "구실이나 이유.", ""],
+            ["필수 어휘", "명색", "名色", "실속 없이 그럴듯하게 불리는 허울만 좋은 이름.", ""],
+            ["필수 어휘", "암전", "어두울 暗 | 구를 轉", "연극에서, 무대를 어둡게 한 상태에서 무대 장치나 장면을 바꾸는 일.", ""],
+            ["필수 어휘", "명전", "明轉", "연극에서, 무대를 밝게 하고 무대 장치나 장면을 바꾸는 일.", ""],
+            ["필수 어휘", "애달프다", "-", "마음이 안타깝거나 쓰라리다. 또는 애처롭고 쓸쓸하다.", ""],
+            ["필수 어휘", "영욕", "영화 榮 | 욕될 辱", "영예와 치욕을 아울러 이르는 말.", ""],
+            ["필수 어휘", "영예", "榮譽", "영광스러운 명예.", ""],
+            ["필수 어휘", "치욕", "恥辱", "수치와 모욕을 아울러 이르는 말.", ""],
+            ["필수 어휘", "장악", "손바닥 掌 | 쥘 握", "손안에 잡아 쥔다는 뜻으로, 무엇을 마음대로 할 수 있게 됨.", ""],
+            ["필수 어휘", "조신하다", "잡을 操 | 몸 身", "몸가짐이 조심스럽고 얌전하다.", ""],
+            ["필수 어휘", "책망", "꾸짖을 責 | 바랄 望", "잘못을 꾸짖거나 나무라며 못마땅하게 여김.", ""],
+            ["필수 어휘", "질책", "叱責", "꾸짖어 나무람.", ""],
+            ["필수 어휘", "문책", "問責", "잘못을 캐묻고 꾸짖음.", ""],
+            ["필수 어휘", "결의", "결정할 決 | 뜻 意", "뜻을 정하여 굳게 마음을 먹음. 또는 그런 마음.", ""],
+            ["필수 어휘", "결심", "決心", "할 일에 대하여 어떻게 하기로 마음을 굳게 정함.", ""],
+            ["필수 어휘", "기묘하다", "기이할 奇 | 묘할 妙", "생김새 따위가 이상하고 묘하다.", ""],
+            ["필수 어휘", "범상하다", "凡常", "중요하게 여길 만하지 아니하고 예사롭다.", ""],
+            ["필수 어휘", "낙향", "떨어질 落 | 시골 鄕", "시골로 거처를 옮기거나 이사함.", ""],
+            ["필수 어휘", "모름지기", "-", "사리를 따져 보건대 마땅히. 또는 반드시.", ""],
+            ["필수 어휘", "불호령", "-", "몹시 심하게 하는 꾸지람.", ""],
+            ["필수 어휘", "불벼락", "-", "호된 꾸중이나 책망을 비유적으로 이르는 말.", ""],
+            ["필수 어휘", "승화", "오를 昇 | 빛날 華", "어떤 현상이 더 높은 상태로 발전하는 일.", ""],
+            ["필수 어휘", "신출귀몰", "귀신 神 | 날 出 | 귀신 鬼 | 잠길 沒", "자유자재로 나타나고 사라짐을 비유적으로 이르는 말.", ""],
+            ["필수 어휘", "천대", "천할 賤 | 대접할 待", "업신여겨 천하게 대우하거나 푸대접함.", ""],
+            ["필수 어휘", "괄대", "恝待", "업신여겨 소홀히 대접함.", ""],
+            ["필수 어휘", "냉대", "冷待", "정성을 들이지 않고 아무렇게나 하는 대접.", ""],
+            ["필수 어휘", "박대", "薄待", "정성을 들이지 않고 아무렇게나 하는 대접.", ""],
+            ["필수 어휘", "후대", "厚待", "아주 잘 대접함.", ""]
+        ];
+
+        // === 상태 관리 ===
+        let studyIndex = 0;
+
+        let quizList = [];
+        let quizIndex = 0;
+        let quizScore = 0;
+        let isFlipped = false;
+
+        // 타임어택 상태
+        let speedQueue = [];
+        let speedTimerInterval;
+        let speedStartTime;
+        let speedCurrentItem = null;
+        let speedIsWaiting = false;
+
+        window.onload = function () {
+            document.body.addEventListener('click', () => Sound.resume(), { once: true });
+            document.getElementById('total-count').innerText = rawData.length;
+            renderStudyCard();
+            renderList();
+            initQuiz();
+            switchTab('study');
+        };
+
+        function switchTab(tabName) {
+            Sound.playClick();
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.querySelectorAll('.content-area').forEach(div => div.classList.remove('active'));
+            document.getElementById(`section-${tabName}`).classList.add('active');
+            
+            if (tabName !== 'speed') {
+                stopSpeedGame();
+            }
+        }
+
+        /* ============ 공부 모드 ============ */
+        function renderStudyCard() {
+            const item = rawData[studyIndex];
+            document.getElementById('s-cat').innerText = item[0];
+            document.getElementById('s-term').innerHTML = `${item[1]} <span style="font-size:0.7em;color:#999;">${item[2] === '-' ? '' : item[2]}</span>`;
+            document.getElementById('s-def').innerText = item[3];
+            document.getElementById('s-count').innerText = `${studyIndex + 1} / ${rawData.length}`;
+        }
+        function nextStudy() {
+            Sound.playClick();
+            if (studyIndex < rawData.length - 1) { studyIndex++; renderStudyCard(); } 
+            else { alert("마지막 단어입니다."); }
+        }
+        function prevStudy() {
+            Sound.playClick();
+            if (studyIndex > 0) { studyIndex--; renderStudyCard(); }
+        }
+
+        /* ============ 카드 퀴즈 ============ */
+        function initQuiz() {
+            quizList = JSON.parse(JSON.stringify(rawData));
+            shuffle(quizList);
+            quizIndex = 0;
+            quizScore = 0;
+            updateQuizStats();
+            showQuizCard();
+        }
+        function showQuizCard() {
+            if (quizIndex >= quizList.length) {
+                Sound.playFanfare();
+                alert(`모든 카드를 학습했습니다!`);
+                initQuiz();
+                return;
+            }
+            const item = quizList[quizIndex];
+            const termTxt = `${item[1]} <span style="font-size:0.6em;color:#aaa;">${item[2] === '-' ? '' : item[2]}</span>`;
+            const card = document.getElementById('flashcard');
+            card.style.transition = 'none';
+            card.classList.remove('is-flipped');
+            isFlipped = false;
+            setTimeout(() => card.style.transition = 'transform 0.6s', 50);
+            
+            document.getElementById('q-front-cat').innerText = item[0];
+            document.getElementById('q-front-main').innerText = item[3]; 
+            document.getElementById('q-front-sub').innerText = "";
+            document.getElementById('q-back-cat').innerText = item[0];
+            document.getElementById('q-back-main').innerHTML = termTxt;
+            document.getElementById('q-back-sub').innerText = "";
+        }
+        function flipCard() {
+            Sound.playFlip();
+            const card = document.getElementById('flashcard');
+            card.classList.toggle('is-flipped');
+            isFlipped = !isFlipped;
+        }
+        function handleQuiz(isCorrect) {
+            if (isCorrect) { Sound.playCorrect(); quizScore++; } 
+            else { Sound.playWrong(); quizList.push(quizList[quizIndex]); }
+            quizIndex++;
+            updateQuizStats();
+            showQuizCard();
+        }
+        function updateQuizStats() {
+            document.getElementById('q-remaining').innerText = `대기: ${quizList.length - quizIndex}`;
+            document.getElementById('q-score').innerText = `완료: ${quizScore}`;
+        }
+
+        /* ============ 타임어택 (Speed Mode) ============ */
+        function startSpeedGame() {
+            Sound.playClick();
+            let pool = JSON.parse(JSON.stringify(rawData));
+            shuffle(pool);
+            speedQueue = pool; 
+            document.getElementById('speed-start-screen').style.display = 'none';
+            document.getElementById('speed-game-area').style.display = 'block';
+            speedStartTime = Date.now();
+            speedTimerInterval = setInterval(updateTimer, 30);
+            nextSpeedQuestion();
+        }
+
+        function stopSpeedGame() {
+            clearInterval(speedTimerInterval);
+            document.getElementById('speed-game-area').style.display = 'none';
+            document.getElementById('speed-start-screen').style.display = 'block';
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const diff = now - speedStartTime;
+            const m = Math.floor(diff / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            const ms = Math.floor((diff % 1000) / 10);
+            document.getElementById('speed-timer').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+        }
+
+        function nextSpeedQuestion() {
+            if (speedQueue.length === 0) {
+                clearInterval(speedTimerInterval);
+                Sound.playFanfare();
+                
+                // 완주 처리: 모달 띄우기
+                const now = Date.now();
+                finalTimeMs = now - speedStartTime;
+                const finalTimeText = document.getElementById('speed-timer').innerText;
+                
+                document.getElementById('final-record-display').innerText = finalTimeText;
+                
+                // 모달 UI 세팅
+                document.getElementById('rank-msg').style.display = 'block';
+                document.getElementById('player-name').style.display = 'inline-block';
+                document.getElementById('player-name').value = "";
+                const saveBtn = document.querySelector('#rank-modal .btn-know');
+                saveBtn.style.display = 'inline-block';
+                saveBtn.disabled = false;
+                saveBtn.innerText = "기록 저장하기";
+                document.getElementById('ranking-board').style.display = 'none';
+                
+                document.getElementById('rank-modal').style.display = 'flex';
+                
+                // 게임 화면은 리셋
+                stopSpeedGame();
+                return;
+            }
+
+            speedIsWaiting = false;
+            speedCurrentItem = speedQueue.shift();
+            document.getElementById('speed-left').innerText = speedQueue.length;
+            document.getElementById('speed-feedback').innerText = "";
+
+            document.getElementById('sp-cat').innerText = speedCurrentItem[0];
+            document.getElementById('sp-word').innerText = speedCurrentItem[1];
+            document.getElementById('sp-hanja').innerText = speedCurrentItem[2] === '-' ? '' : speedCurrentItem[2];
+
+            const choices = [speedCurrentItem];
+            while (choices.length < 4) {
+                const randomItem = rawData[Math.floor(Math.random() * rawData.length)];
+                if (!choices.includes(randomItem) && randomItem[1] !== speedCurrentItem[1]) {
+                    choices.push(randomItem);
+                }
+            }
+            shuffle(choices);
+
+            const container = document.getElementById('choice-container');
+            container.innerHTML = "";
+            choices.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = item[3]; 
+                btn.onclick = () => checkSpeedAnswer(btn, item);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkSpeedAnswer(btn, item) {
+            if (speedIsWaiting) return;
+            const isCorrect = (item[1] === speedCurrentItem[1]);
+            if (isCorrect) {
+                Sound.playCorrect();
+                btn.classList.add('correct');
+                nextSpeedQuestion();
+            } else {
+                Sound.playWrong();
+                speedIsWaiting = true;
+                btn.classList.add('wrong');
+                document.getElementById('speed-feedback').innerText = "틀렸습니다! (맨 뒤로 이동됨)";
+                const btns = document.querySelectorAll('.choice-btn');
+                btns.forEach(b => { if (b.innerText === speedCurrentItem[3]) b.classList.add('correct'); });
+                speedQueue.push(speedCurrentItem);
+                document.getElementById('speed-left').innerText = speedQueue.length;
+                setTimeout(nextSpeedQuestion, 1500);
+            }
+        }
+
+        /* ============ 랭킹 시스템 ============ */
+        function closeRankModal() {
+            document.getElementById('rank-modal').style.display = 'none';
+            document.getElementById('speed-timer').innerText = "00:00.00";
+        }
+
+        async function submitScore() {
+            const name = document.getElementById('player-name').value.trim();
+            if (name.length < 2) {
+                alert("이름을 2글자 이상 입력해주세요.");
+                return;
+            }
+
+            const btn = document.querySelector('#rank-modal .btn-know');
+            btn.disabled = true;
+            btn.innerText = "저장 중...";
+
+            try {
+                // API_URL 확인
+                if(!API_URL || API_URL.includes("xxxx")) {
+                    alert("서버 주소 오류: 올바른 Render 주소가 설정되지 않았습니다.");
+                    btn.disabled = false;
+                    return;
+                }
+
+                await fetch(`${API_URL}/api/score`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, time_ms: finalTimeMs })
+                });
+
+                // 성공 시 UI 업데이트
+                document.getElementById('rank-msg').style.display = 'none';
+                document.getElementById('player-name').style.display = 'none';
+                btn.style.display = 'none';
+                
+                await loadRanking(); // 랭킹 불러오기
+
+            } catch (err) {
+                alert("기록 저장 실패: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "기록 저장하기";
+            }
+        }
+
+        async function loadRanking() {
+            try {
+                const res = await fetch(`${API_URL}/api/ranking`);
+                const data = await res.json();
+
+                const board = document.getElementById('ranking-board');
+                board.innerHTML = "<h3>🏆 명예의 전당 (Top 10)</h3>";
+                board.style.display = 'block';
+
+                if(data.length === 0) {
+                    board.innerHTML += "<p style='text-align:center; color:#999;'>아직 기록이 없습니다. 1등을 노려보세요!</p>";
+                }
+
+                data.forEach((row, index) => {
+                    const m = Math.floor(row.time_ms / 60000);
+                    const s = Math.floor((row.time_ms % 60000) / 1000);
+                    const ms = Math.floor((row.time_ms % 1000) / 10);
+                    const timeStr = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
+
+                    const div = document.createElement('div');
+                    div.className = 'rank-row';
+                    div.innerHTML = `
+                        <span>${index + 1}. <strong>${row.name}</strong></span>
+                        <span>${timeStr}</span>
+                    `;
+                    board.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert("랭킹을 불러오지 못했습니다.");
+            }
+        }
+
+        /* ============ 목록/검색/유틸 ============ */
+        function renderList(filterText = "") {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = "";
+            const filtered = rawData.filter(item => {
+                const text = (item[0] + item[1] + item[3]).toLowerCase();
+                return text.includes(filterText.toLowerCase());
+            });
+            if (filtered.length === 0) {
+                container.innerHTML = "<div style='padding:20px;text-align:center;color:#999;'>결과 없음</div>";
+                return;
+            }
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="font-size:0.75rem; color:#999; margin-bottom:2px;">${item[0]}</div>
+                    <div class="list-term">${item[1]} <span style="font-weight:normal;color:#aaa;font-size:0.8rem;">${item[2]}</span></div>
+                    <div class="list-def">${item[3]}</div>
+                `;
+                div.onclick = () => {
+                    Sound.playClick();
+                    studyIndex = rawData.indexOf(item);
+                    renderStudyCard();
+                    switchTab('study');
+                };
+                container.appendChild(div);
+            });
+        }
+        function filterList() { renderList(document.getElementById('searchInput').value); }
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+    </script>
+</body>
+</html>
